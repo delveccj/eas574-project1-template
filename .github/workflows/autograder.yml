@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  grade:
+  validate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -22,50 +22,90 @@ jobs:
       - name: Check requirements.txt exists
         run: |
           if [ ! -f requirements.txt ]; then
+            echo "=========================================="
             echo "ERROR: requirements.txt not found!"
             echo "You must create this file with your dependencies."
+            echo "=========================================="
             exit 1
           fi
+          echo "✓ requirements.txt found"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Clone private grader repo
-        run: |
-          git clone https://x-access-token:${{ secrets.GRADER_PAT }}@github.com/${{ secrets.GRADER_REPO }}.git grader
-
-      - name: Train model
+      - name: Run training
         run: |
           echo "=========================================="
-          echo "TRAINING MODEL"
+          echo "RUNNING train.py"
           echo "=========================================="
           python src/train.py
 
       - name: Verify model files exist
         run: |
+          echo "=========================================="
+          echo "CHECKING MODEL FILES"
+          echo "=========================================="
           if [ ! -f chess_model.pkl ]; then
             echo "ERROR: chess_model.pkl not found!"
+            echo "Make sure train.py saves the model with joblib.dump()"
             exit 1
           fi
+          echo "✓ chess_model.pkl found"
+
           if [ ! -f feature_scaler.pkl ]; then
             echo "ERROR: feature_scaler.pkl not found!"
+            echo "Make sure train.py saves the scaler with joblib.dump()"
             exit 1
           fi
-          echo "Model files found."
+          echo "✓ feature_scaler.pkl found"
 
-      - name: Run scorer
+      - name: Validate predict() function
         run: |
           echo "=========================================="
-          echo "SCORING SUBMISSION"
+          echo "VALIDATING predict() FUNCTION"
           echo "=========================================="
-          cd grader && python score.py
+          python -c "
+          import pandas as pd
+          import numpy as np
+          from src.predict import predict
 
-      - name: Display results
-        if: always()
+          # Load a few rows of data
+          df = pd.read_csv('data/chess_games.csv').head(10)
+          df = df.drop(columns=['outcome'])
+
+          # Zero out placeholders (simulates autograder)
+          df['custom_feature_1'] = 0
+          df['custom_feature_2'] = 0
+          df['custom_feature_3'] = 0
+          df['custom_feature_4'] = 0
+
+          # Call predict
+          probs = predict(df)
+
+          # Validate output
+          assert probs is not None, 'predict() returned None'
+          assert isinstance(probs, np.ndarray), f'Expected numpy array, got {type(probs)}'
+          assert probs.shape == (10, 3), f'Expected shape (10, 3), got {probs.shape}'
+          assert np.allclose(probs.sum(axis=1), 1.0, atol=1e-3), 'Probabilities do not sum to 1.0'
+
+          print('✓ predict() returns correct shape (n_samples, 3)')
+          print('✓ Probabilities sum to 1.0')
+          print()
+          print('Sample predictions:')
+          print(f'  P(White loss): {probs[0, 0]:.3f}')
+          print(f'  P(Draw):       {probs[0, 1]:.3f}')
+          print(f'  P(White win):  {probs[0, 2]:.3f}')
+          "
+
+      - name: Success
         run: |
           echo "=========================================="
-          echo "AUTOGRADER COMPLETE"
+          echo "✓ ALL CHECKS PASSED!"
           echo "=========================================="
-          echo "Check UB Learns for the class scoreboard."
+          echo ""
+          echo "Your code runs successfully."
+          echo "Final scoring on hidden data will be done after the deadline."
+          echo ""
+          echo "=========================================="
