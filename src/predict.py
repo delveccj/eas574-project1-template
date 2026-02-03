@@ -2,10 +2,10 @@
 EAS 574 Project 1: Chess Outcome Prediction
 Prediction Interface
 
-The autograder calls the predict() function directly.
+The grader calls the predict() function directly.
 DO NOT change the function signature.
 
-IMPORTANT: The autograder passes the same columns as chess_games.csv
+IMPORTANT: The grader passes the same columns as chess_games.csv
 (move_text_20 + 21 baseline + 4 placeholders), but placeholders are zeros.
 You must compute your custom features here too!
 """
@@ -44,7 +44,7 @@ def add_custom_features(df):
     Compute your custom features - MUST MATCH train.py EXACTLY!
 
     Copy your feature computation code from train.py here.
-    The autograder passes zeros in the placeholder columns,
+    The grader passes zeros in the placeholder columns,
     so you must overwrite them with the same features you trained on.
     """
     import chess
@@ -138,7 +138,7 @@ def test_locally():
         print(f"ERROR: {data_file} not found")
         return
 
-    # Simulate autograder: take last 1000, drop outcome, zero out placeholders
+    # Simulate grader: take last 1000, drop outcome, zero out placeholders
     test_df = df.tail(1000).copy()
     test_df = test_df.drop(columns=['outcome'])
     test_df['custom_feature_1'] = 0

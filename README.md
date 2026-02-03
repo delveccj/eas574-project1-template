@@ -19,7 +19,7 @@ python src/train.py
 # 4. Test predictions locally
 python src/predict.py
 
-# 5. Push to trigger autograder
+# 5. Push to trigger validation check
 git add .
 git commit -m "Complete implementation"
 git push
@@ -62,7 +62,7 @@ def add_custom_features(df):
     return df
 ```
 
-The autograder passes zeros in these columns — your code must fill them in!
+The grader passes zeros in these columns — your code must fill them in!
 
 ## Grading Contract
 

@@ -11,7 +11,7 @@ The data file contains:
 - outcome: Game result (0.0 = White loss, 0.5 = Draw, 1.0 = White win)
 
 You should split the data into train/test sets yourself to evaluate locally.
-The autograder will test on hidden data you've never seen.
+After the deadline, your model will be scored on hidden data you've never seen.
 """
 
 import pandas as pd

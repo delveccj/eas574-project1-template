@@ -1,4 +1,4 @@
-name: Autograder
+name: Validation Check
 
 on:
   push:
@@ -75,7 +75,7 @@ jobs:
           df = pd.read_csv('data/chess_games.csv').head(10)
           df = df.drop(columns=['outcome'])
 
-          # Zero out placeholders (simulates autograder)
+          # Zero out placeholders (simulates grader)
           df['custom_feature_1'] = 0
           df['custom_feature_2'] = 0
           df['custom_feature_3'] = 0
